@@ -1,0 +1,116 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:1559489475887437144",
+      "lastPropertyId": "5:1304545568241409",
+      "name": "Course",
+      "properties": [
+        {
+          "id": "1:5897297951197310056",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7597624310784584220",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "3:2831000902006989411",
+          "name": "weigth",
+          "type": 6
+        },
+        {
+          "id": "4:818514178281496133",
+          "name": "score",
+          "type": 8
+        },
+        {
+          "id": "5:1304545568241409",
+          "name": "cycleId",
+          "type": 11,
+          "flags": 520,
+          "indexId": "1:3497654551752107378",
+          "relationTarget": "Cycle"
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:6325997419402601084",
+      "lastPropertyId": "3:5937953626750968727",
+      "name": "Cycle",
+      "properties": [
+        {
+          "id": "1:2629266586627284642",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:8639050055455570614",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "3:5937953626750968727",
+          "name": "score",
+          "type": 8
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:8082493697622403075",
+      "lastPropertyId": "5:7863130741852949904",
+      "name": "Evaluation",
+      "properties": [
+        {
+          "id": "1:2099996250803142111",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:150739233848118640",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "3:3372063793000731092",
+          "name": "weight",
+          "type": 6
+        },
+        {
+          "id": "4:8913163524422596042",
+          "name": "score",
+          "type": 8
+        },
+        {
+          "id": "5:7863130741852949904",
+          "name": "courseId",
+          "type": 11,
+          "flags": 520,
+          "indexId": "2:6751851849821398164",
+          "relationTarget": "Course"
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "3:8082493697622403075",
+  "lastIndexId": "2:6751851849821398164",
+  "lastRelationId": "0:0",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}
