@@ -7,7 +7,7 @@ import 'package:u_calc/Course/model/course.dart';
 class Evaluation {
   int id = 0;
   String name;
-  int weight;
+  double weight;
   double? score;
 
   final course = ToOne<Course>();

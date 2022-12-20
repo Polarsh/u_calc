@@ -1,10 +1,12 @@
 // ignore_for_file: prefer_const_constructors, non_constant_identifier_names
 
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:u_calc/Course/model/course.dart';
 import 'package:u_calc/Course/ui/add_course_screen.dart';
 import 'package:u_calc/Cycle/model/cycle.dart';
 import 'package:u_calc/Evaluation/ui/evaluations_screen.dart';
+import 'package:u_calc/Settings/settings_screen.dart';
 import 'package:u_calc/objectbox.g.dart';
 
 class CoursesScreen extends StatefulWidget {
@@ -24,6 +26,27 @@ class _CoursesScreenState extends State<CoursesScreen> {
   void initState() {
     courses.addAll(List.from(widget.cycle.courses));
     super.initState();
+  }
+
+  void calculateCycleScore() {
+    late double score = 0;
+    late double totalScore = 0;
+    late double totalWeigth = 0;
+
+    for (var course in courses) {
+      totalScore += course.score * course.weigth;
+      totalWeigth += course.weigth;
+    }
+    score = totalScore / totalWeigth;
+
+    editCycleScore(score);
+
+    setState(() {});
+  }
+
+  Future<void> editCycleScore(double score) async {
+    widget.cycle.score = score;
+    widget.store.box<Cycle>().put(widget.cycle);
   }
 
   Future<void> addCourse() async {
@@ -48,11 +71,12 @@ class _CoursesScreenState extends State<CoursesScreen> {
       courses.addAll(coursesResult);
     });
     query.close();
+    calculateCycleScore();
   }
 
   Future<void> goToEvaluations(Course course) async {
-    Navigator.of(context).push(
-      await MaterialPageRoute<void>(
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
         builder: (BuildContext context) {
           return EvaluationsScreen(
             course: course,
@@ -61,8 +85,17 @@ class _CoursesScreenState extends State<CoursesScreen> {
         },
       ),
     );
-
     _reloadCourses();
+  }
+
+  void _goToSettings() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          return SettingsScreen();
+        },
+      ),
+    );
   }
 
   @override
@@ -81,12 +114,34 @@ class _CoursesScreenState extends State<CoursesScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await addCourse();
-          setState(() {});
-        },
-        child: Icon(Icons.add),
+      floatingActionButton: SpeedDial(
+        animatedIcon: AnimatedIcons.menu_close,
+        overlayColor: Colors.black,
+        overlayOpacity: 0.4,
+        spacing: 10,
+        spaceBetweenChildren: 10,
+        children: [
+          SpeedDialChild(
+            child: Icon(Icons.settings),
+            label: "Ajustes",
+            onTap: () {
+              _goToSettings();
+            },
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.edit),
+            label: "Editar",
+            onTap: () {},
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.add),
+            label: "Añadir",
+            onTap: () async {
+              await addCourse();
+              setState(() {});
+            },
+          ),
+        ],
       ),
     );
   }
@@ -98,7 +153,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
       decoration: BoxDecoration(border: Border.all(width: 1)),
       child: ListTile(
         title: Text("Ciclo: ${cycle.name}"),
-        subtitle: Text("Promedio: ${cycle.score}"),
+        subtitle: Text("Promedio: ${cycle.score.roundToDouble()}"),
       ),
     );
   }

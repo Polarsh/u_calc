@@ -1,7 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
-import 'package:u_calc/utils/tabs.dart';
+import 'package:u_calc/Cycle/ui/cycles_screen.dart';
 
 // flutter packages pub run build_runner build
 Future<void> main() async {
@@ -36,6 +36,6 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
-    return Tabs();
+    return CyclesScreen();
   }
 }

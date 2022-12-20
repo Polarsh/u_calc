@@ -5,6 +5,8 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:u_calc/Course/model/course.dart';
 import 'package:u_calc/Evaluation/model/evaluation.dart';
 import 'package:u_calc/Evaluation/ui/add_evaluation_screen.dart';
+import 'package:u_calc/Evaluation/ui/edit_evaluation_screen.dart';
+import 'package:u_calc/Settings/settings_screen.dart';
 import 'package:u_calc/objectbox.g.dart';
 
 class EvaluationsScreen extends StatefulWidget {
@@ -26,6 +28,23 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
     super.initState();
   }
 
+  void calculateCourseScore() {
+    late double score = 0;
+
+    for (var evaluation in evaluations) {
+      score += evaluation.score! * evaluation.weight * 0.01;
+    }
+
+    editCourseScore(score);
+
+    setState(() {});
+  }
+
+  Future<void> editCourseScore(double score) async {
+    widget.course.score = score;
+    widget.store.box<Course>().put(widget.course);
+  }
+
   Future<void> addEvaluation() async {
     final result = await showDialog(
         context: context, builder: (_) => AddEvaluationScreen());
@@ -35,6 +54,25 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
       widget.store.box<Evaluation>().put(result);
       _reloadEvaluations();
     }
+  }
+
+  Future<void> editEvaluation(Evaluation evaluation) async {
+    final result = await showDialog(
+        context: context,
+        builder: (_) => EditEvaluationScreen(evaluation: evaluation));
+
+    if (result != null && result is Evaluation) {
+      evaluation.name = result.name;
+      evaluation.weight = result.weight;
+      evaluation.score = result.score;
+      widget.store.box<Evaluation>().put(evaluation);
+      _reloadEvaluations();
+    }
+  }
+
+  Future<void> deleteEvaluation(Evaluation evaluation) async {
+    widget.store.box<Evaluation>().remove(evaluation.id);
+    _reloadEvaluations();
   }
 
   void _reloadEvaluations() {
@@ -48,6 +86,17 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
       evaluations.addAll(evaluationsResult);
     });
     query.close();
+    calculateCourseScore();
+  }
+
+  void _goToSettings() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          return SettingsScreen();
+        },
+      ),
+    );
   }
 
   @override
@@ -72,7 +121,18 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
         spacing: 10,
         spaceBetweenChildren: 10,
         children: [
-          SpeedDialChild(child: Icon(Icons.edit), label: "Editar"),
+          SpeedDialChild(
+            child: Icon(Icons.settings),
+            label: "Ajustes",
+            onTap: () {
+              _goToSettings();
+            },
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.edit),
+            label: "Editar",
+            onTap: () {},
+          ),
           SpeedDialChild(
             child: Icon(Icons.add),
             label: "Añadir",
@@ -87,17 +147,54 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
   }
 
   Widget myTitleCourse() {
-    return Text("data");
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.15,
+      width: MediaQuery.of(context).size.width,
+      color: Colors.blue.shade400,
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              children: [
+                Text("Curso: ${widget.course.name}"),
+                Text("Créditos: ${widget.course.weigth}"),
+              ],
+            ),
+          ),
+          VerticalDivider(),
+          Expanded(
+            child: Column(
+              children: [
+                Text("Nota acumulada: ${widget.course.score}"),
+                Text("Nota al 20%"),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget myDataTable() {
     return Center(
       child: DataTable(
+        horizontalMargin: 10,
+        columnSpacing: 20,
+        headingRowHeight: 30,
         border: TableBorder.all(),
         columns: <DataColumn>[
-          DataColumn(label: Text("Evaluación")),
-          DataColumn(label: Text("Peso")),
-          DataColumn(label: Text("Nota")),
+          DataColumn(
+            label: Text("Evaluación"),
+          ),
+          DataColumn(
+            label: Text("Peso"),
+          ),
+          DataColumn(
+            label: Text("Nota"),
+          ),
+          DataColumn(
+            label: Text("Opciones"),
+          ),
         ],
         rows: evaluations.map<DataRow>((Evaluation evaluation) {
           return DataRow(
@@ -105,6 +202,24 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
               DataCell(Text(evaluation.name)),
               DataCell(Text("${evaluation.weight.toString()} %")),
               DataCell(Text(evaluation.score!.toString())),
+              DataCell(Row(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: () async {
+                      await editEvaluation(evaluation);
+                      setState(() {});
+                    },
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () async {
+                      await deleteEvaluation(evaluation);
+                      setState(() {});
+                    },
+                  ),
+                ],
+              )),
             ],
           );
         }).toList(),

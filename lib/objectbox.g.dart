@@ -105,7 +105,7 @@ final _entities = <ModelEntity>[
         ModelProperty(
             id: const IdUid(3, 3372063793000731092),
             name: 'weight',
-            type: 6,
+            type: 8,
             flags: 0),
         ModelProperty(
             id: const IdUid(4, 8913163524422596042),
@@ -255,7 +255,7 @@ ModelDefinition getObjectBoxModel() {
           fbb.startTable(6);
           fbb.addInt64(0, object.id);
           fbb.addOffset(1, nameOffset);
-          fbb.addInt64(2, object.weight);
+          fbb.addFloat64(2, object.weight);
           fbb.addFloat64(3, object.score);
           fbb.addInt64(4, object.course.targetId);
           fbb.finish(fbb.endTable());
@@ -269,7 +269,7 @@ ModelDefinition getObjectBoxModel() {
               name: const fb.StringReader(asciiOptimization: true)
                   .vTableGet(buffer, rootOffset, 6, ''),
               weight:
-                  const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0),
+                  const fb.Float64Reader().vTableGet(buffer, rootOffset, 8, 0),
               score: const fb.Float64Reader()
                   .vTableGetNullable(buffer, rootOffset, 10))
             ..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
@@ -327,7 +327,7 @@ class Evaluation_ {
 
   /// see [Evaluation.weight]
   static final weight =
-      QueryIntegerProperty<Evaluation>(_entities[2].properties[2]);
+      QueryDoubleProperty<Evaluation>(_entities[2].properties[2]);
 
   /// see [Evaluation.score]
   static final score =

@@ -5,26 +5,27 @@ import 'package:u_calc/Evaluation/model/evaluation.dart';
 
 import 'package:u_calc/widgets/myWidgets.dart';
 
-class AddEvaluationScreen extends StatefulWidget {
-  const AddEvaluationScreen({super.key});
+class EditEvaluationScreen extends StatefulWidget {
+  final Evaluation evaluation;
+  const EditEvaluationScreen({super.key, required this.evaluation});
 
   @override
-  State<AddEvaluationScreen> createState() => _AddEvaluationScreenState();
+  State<EditEvaluationScreen> createState() => _EditEvaluationScreenState();
 }
 
-class _AddEvaluationScreenState extends State<AddEvaluationScreen> {
+class _EditEvaluationScreenState extends State<EditEvaluationScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final evaluationNameController = TextEditingController();
-  final evaluationWeigthController = TextEditingController();
-  final evaluationScoreController = TextEditingController();
+  late final evaluationNameController = TextEditingController();
+  late final evaluationWeigthController = TextEditingController();
+  late final evaluationScoreController = TextEditingController();
 
   @override
-  void dispose() {
-    evaluationNameController.dispose();
-    evaluationWeigthController.dispose();
-    evaluationScoreController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    evaluationNameController.text = widget.evaluation.name;
+    evaluationWeigthController.text = widget.evaluation.weight.toString();
+    evaluationScoreController.text = widget.evaluation.score.toString();
   }
 
   void _onSave() {
@@ -73,7 +74,7 @@ class _AddEvaluationScreenState extends State<AddEvaluationScreen> {
     return Padding(
       padding: EdgeInsets.only(bottom: 15),
       child: Center(
-        child: Text("Añadir Evaluación"),
+        child: Text("Editar Evaluación"),
       ),
     );
   }
@@ -136,7 +137,7 @@ class _AddEvaluationScreenState extends State<AddEvaluationScreen> {
       child: SizedBox(
         width: MediaQuery.of(context).size.width * 0.2,
         child: Text(
-          "Añadir",
+          "Editar",
           textAlign: TextAlign.center,
         ),
       ),

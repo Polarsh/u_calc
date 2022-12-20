@@ -1,9 +1,11 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:u_calc/Course/ui/courses_screen.dart';
 import 'package:u_calc/Cycle/model/cycle.dart';
 import 'package:u_calc/Cycle/ui/add_cycle_screen.dart';
+import 'package:u_calc/Settings/settings_screen.dart';
 import 'package:u_calc/objectbox.g.dart';
 
 import '../../Course/model/course.dart';
@@ -18,8 +20,8 @@ class CyclesScreen extends StatefulWidget {
 class _CyclesScreenState extends State<CyclesScreen> {
   final List<Cycle> cycles = [];
 
-  late final Store store;
   late final Box<Cycle> cycleBox;
+  late final Store store;
 
   @override
   void initState() {
@@ -27,7 +29,7 @@ class _CyclesScreenState extends State<CyclesScreen> {
     super.initState();
   }
 
-  Future<void> _addCycle() async {
+  Future<void> addCycle() async {
     final result =
         await showDialog(context: context, builder: (_) => AddCycleScreen());
 
@@ -37,8 +39,9 @@ class _CyclesScreenState extends State<CyclesScreen> {
     }
   }
 
-  Future<void> _loadStore() async {
+  void _loadStore() async {
     store = await openStore();
+
     cycleBox = store.box<Cycle>();
     _loadCycles();
   }
@@ -65,6 +68,16 @@ class _CyclesScreenState extends State<CyclesScreen> {
     _loadCycles();
   }
 
+  void _goToSettings() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          return SettingsScreen();
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,12 +90,34 @@ class _CyclesScreenState extends State<CyclesScreen> {
               child: Text("Añade un ciclo académico para comenzar"),
             )
           : cycleItemList(context, cycles, store),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await _addCycle();
-          setState(() {});
-        },
-        child: Icon(Icons.add),
+      floatingActionButton: SpeedDial(
+        animatedIcon: AnimatedIcons.menu_close,
+        overlayColor: Colors.black,
+        overlayOpacity: 0.4,
+        spacing: 10,
+        spaceBetweenChildren: 10,
+        children: [
+          SpeedDialChild(
+            child: Icon(Icons.settings),
+            label: "Ajustes",
+            onTap: () {
+              _goToSettings();
+            },
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.edit),
+            label: "Editar",
+            onTap: () {},
+          ),
+          SpeedDialChild(
+            child: Icon(Icons.add),
+            label: "Añadir",
+            onTap: () async {
+              await addCycle();
+              setState(() {});
+            },
+          ),
+        ],
       ),
     );
   }
@@ -113,7 +148,7 @@ class _CyclesScreenState extends State<CyclesScreen> {
         selected == !selected;
       },
       title: Text("Ciclo: ${cycle.name}"),
-      subtitle: Text("Promedio: ${cycle.score}"),
+      subtitle: Text("Promedio: ${cycle.score.roundToDouble()}"),
       children: <Widget>[courseItemsList(cycle.courses)],
     );
   }
@@ -135,7 +170,7 @@ class _CyclesScreenState extends State<CyclesScreen> {
         width: 30,
       ),
       title: Text("Curso: ${course.name}"),
-      subtitle: Text("Nota: ${course.score.toString()}"),
+      subtitle: Text("Nota: ${course.score.toStringAsFixed(2)}"),
     );
   }
 }
