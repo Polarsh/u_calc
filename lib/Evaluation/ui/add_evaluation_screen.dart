@@ -72,9 +72,7 @@ class _AddEvaluationScreenState extends State<AddEvaluationScreen> {
   Widget _evaluationTitle() {
     return Padding(
       padding: EdgeInsets.only(bottom: 15),
-      child: Center(
-        child: Text("Añadir Evaluación"),
-      ),
+      child: Text("Añadir Evaluación"),
     );
   }
 

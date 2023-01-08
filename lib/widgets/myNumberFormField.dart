@@ -29,8 +29,14 @@ class _MyScoreFormField extends State<MyScoreFormField> {
             Radius.circular(15),
           ),
         ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(width: 3, color: Colors.green),
+          borderRadius: BorderRadius.all(
+            Radius.circular(15),
+          ),
+        ),
         border: OutlineInputBorder(
-          borderSide: BorderSide(width: 3, color: Colors.blue),
+          borderSide: BorderSide(width: 3, color: Colors.green),
           borderRadius: BorderRadius.all(
             Radius.circular(15),
           ),

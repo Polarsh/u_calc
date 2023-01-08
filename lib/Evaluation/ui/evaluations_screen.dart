@@ -1,12 +1,13 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:u_calc/Course/model/course.dart';
 import 'package:u_calc/Evaluation/model/evaluation.dart';
 import 'package:u_calc/Evaluation/ui/add_evaluation_screen.dart';
+import 'package:u_calc/Evaluation/ui/delete_evaluation_screen.dart';
 import 'package:u_calc/Evaluation/ui/edit_evaluation_screen.dart';
-import 'package:u_calc/Settings/settings_screen.dart';
 import 'package:u_calc/objectbox.g.dart';
 
 class EvaluationsScreen extends StatefulWidget {
@@ -20,11 +21,14 @@ class EvaluationsScreen extends StatefulWidget {
 }
 
 class _EvaluationsScreenState extends State<EvaluationsScreen> {
+  List<String> headers = ["Evaluación", "Peso", "Nota", "Opciones"];
   List<Evaluation> evaluations = [];
+  late double totalPercent;
 
   @override
   void initState() {
     evaluations.addAll(List.from(widget.course.evaluations));
+    calculateCoursePercent();
     super.initState();
   }
 
@@ -38,6 +42,20 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
     editCourseScore(score);
 
     setState(() {});
+  }
+
+  void calculateCoursePercent() {
+    late double percent = 0;
+
+    for (var evaluation in evaluations) {
+      if (evaluation.score! > 0) {
+        percent += evaluation.weight;
+      }
+    }
+
+    setState(() {
+      totalPercent = percent;
+    });
   }
 
   Future<void> editCourseScore(double score) async {
@@ -71,8 +89,13 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
   }
 
   Future<void> deleteEvaluation(Evaluation evaluation) async {
-    widget.store.box<Evaluation>().remove(evaluation.id);
-    _reloadEvaluations();
+    final result = await showDialog(
+        context: context, builder: (_) => DeleteEvaluationScreen());
+
+    if (result) {
+      widget.store.box<Evaluation>().remove(evaluation.id);
+      _reloadEvaluations();
+    }
   }
 
   void _reloadEvaluations() {
@@ -87,86 +110,67 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
     });
     query.close();
     calculateCourseScore();
-  }
-
-  void _goToSettings() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) {
-          return SettingsScreen();
-        },
-      ),
-    );
+    calculateCoursePercent();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Evaluaciones"),
+        title: Text(widget.course.name),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             myTitleCourse(),
-            myDataTable(),
+            myAddButtons(),
+            evaluations.isNotEmpty
+                ? myDataTable()
+                : Text("No hay evaluaciones, favor de añadirlas"),
           ],
         ),
-      ),
-      floatingActionButton: SpeedDial(
-        animatedIcon: AnimatedIcons.menu_close,
-        overlayColor: Colors.black,
-        overlayOpacity: 0.4,
-        spacing: 10,
-        spaceBetweenChildren: 10,
-        children: [
-          SpeedDialChild(
-            child: Icon(Icons.settings),
-            label: "Ajustes",
-            onTap: () {
-              _goToSettings();
-            },
-          ),
-          SpeedDialChild(
-            child: Icon(Icons.edit),
-            label: "Editar",
-            onTap: () {},
-          ),
-          SpeedDialChild(
-            child: Icon(Icons.add),
-            label: "Añadir",
-            onTap: () async {
-              await addEvaluation();
-              setState(() {});
-            },
-          ),
-        ],
       ),
     );
   }
 
   Widget myTitleCourse() {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.15,
-      width: MediaQuery.of(context).size.width,
-      color: Colors.blue.shade400,
+      color: Colors.lightBlue.shade900,
       child: Row(
         children: [
           Expanded(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Curso: ${widget.course.name}"),
                 Text("Créditos: ${widget.course.weigth}"),
+                widget.course.score > 12.5
+                    ? Text(
+                        "Aprobado",
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 24,
+                        ),
+                      )
+                    : Text(
+                        "Desaprobado",
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 24,
+                        ),
+                      )
               ],
             ),
           ),
-          VerticalDivider(),
           Expanded(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Nota acumulada: ${widget.course.score}"),
-                Text("Nota al 20%"),
+                Text("Nota al $totalPercent%"),
+                Text(
+                  widget.course.score.toStringAsFixed(2),
+                  style: TextStyle(fontSize: 32),
+                ),
               ],
             ),
           ),
@@ -175,51 +179,98 @@ class _EvaluationsScreenState extends State<EvaluationsScreen> {
     );
   }
 
+  Widget myAddButtons() {
+    return ElevatedButton(
+      onPressed: () async {
+        await addEvaluation();
+        setState(() {});
+      },
+      child: Text("Añadir evaluación"),
+    );
+  }
+
   Widget myDataTable() {
-    return Center(
+    return Padding(
+      padding: EdgeInsets.only(bottom: 5),
       child: DataTable(
-        horizontalMargin: 10,
-        columnSpacing: 20,
-        headingRowHeight: 30,
-        border: TableBorder.all(),
-        columns: <DataColumn>[
-          DataColumn(
-            label: Text("Evaluación"),
-          ),
-          DataColumn(
-            label: Text("Peso"),
-          ),
-          DataColumn(
-            label: Text("Nota"),
-          ),
-          DataColumn(
-            label: Text("Opciones"),
-          ),
-        ],
+        columnSpacing: 0,
+        horizontalMargin: 0,
+        headingRowHeight: 40,
+        border: TableBorder.all(width: 1),
+        columns: headers.map<DataColumn>((String header) {
+          return DataColumn(
+            label: Expanded(
+              child: Text(
+                header,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        }).toList(),
         rows: evaluations.map<DataRow>((Evaluation evaluation) {
+          var index = evaluations.indexOf(evaluation);
           return DataRow(
+            color: MaterialStateProperty.resolveWith((states) {
+              if (index.isEven) {
+                return Colors.grey.shade300;
+              }
+              return null;
+            }),
             cells: <DataCell>[
-              DataCell(Text(evaluation.name)),
-              DataCell(Text("${evaluation.weight.toString()} %")),
-              DataCell(Text(evaluation.score!.toString())),
-              DataCell(Row(
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.edit),
-                    onPressed: () async {
-                      await editEvaluation(evaluation);
-                      setState(() {});
-                    },
+              DataCell(
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.38,
+                  child: Text(
+                    evaluation.name,
+                    textAlign: TextAlign.center,
                   ),
-                  IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () async {
-                      await deleteEvaluation(evaluation);
-                      setState(() {});
-                    },
+                ),
+              ),
+              DataCell(
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.20,
+                  child: Text(
+                    "${evaluation.weight.toString()} %",
+                    textAlign: TextAlign.center,
                   ),
-                ],
-              )),
+                ),
+              ),
+              DataCell(
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.20,
+                  child: Text(
+                    evaluation.score!.toString(),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              DataCell(
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.20,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: IconButton(
+                          icon: Icon(Icons.edit),
+                          onPressed: () async {
+                            await editEvaluation(evaluation);
+                            setState(() {});
+                          },
+                        ),
+                      ),
+                      Expanded(
+                        child: IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () async {
+                            await deleteEvaluation(evaluation);
+                            setState(() {});
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           );
         }).toList(),
